@@ -1,0 +1,17 @@
+{ "home":"Home",
+    "signin":"Sign In",
+    "signup":"Sign Up",
+    "name":"Name",
+    "email":"Email Address",
+    "phone":"Phone Number",
+    "password":"Password",
+    "confirm password":"Confirm Password",
+    "registered":"Already registerd ?",
+
+    "english":"English",
+    "arabic":"Arabic",
+    "Don't Have Account":"Don't Have Account?"
+
+
+
+}

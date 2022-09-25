@@ -1,30 +1,21 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import {useEffect } from "react";
 const Home = () => {
+  const navigate=useNavigate()
+  useEffect(()=>{
+    const token =localStorage.getItem('token')
+    if(!token){
+      navigate('/signin')
+    }
+  })
   return (
     <div>
-      <nav className="navbar navbar-expand-lg navbar-light fixed-top">
-        <div className="container">
-          <Link className="navbar-brand" to={"/"}>
-            home
-          </Link>
-          <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
-            <ul className="navbar-nav ml-auto">
-              <li className="nav-item">
-                <Link className="nav-link" to={"/signin"}>
-                  Login
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link" to={"/signup"}>
-                  Sign up
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
       <main>
         <h2>Welcome back ...</h2>
+        <button onClick={()=>{
+          localStorage.removeItem('token')
+          navigate('/signin')
+        }}>log out</button>
       </main>
     </div>
 

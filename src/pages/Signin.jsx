@@ -1,19 +1,76 @@
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useState } from "react";
-import { NotificationManager } from "react-notifications";
+import { Store } from "react-notifications-component";
+import { submitData } from "../api/signin";
+import { useTranslation } from "react-i18next";
+import { Button, Form } from "antd";
+import { useNavigate } from "react-router-dom";
 
 const Signin = () => {
+  const navigate=useNavigate()
+  const { t } = useTranslation();
+
+  const schema = yup.object().shape({
+    email: yup.string().email().required("Email is required"),
+    // phone: yup
+    //   .string()
+    //   .required("please enter your phone number")
+    //   .matches(/^[0-9]+$/, "enter valid phone Number")
+    //   .min(9, "please enter phone number with 9 digit at least"),
+    password: yup
+      .string()
+      .required("please enter your password")
+      .min(6, "please enter password with 6 digit at least")
+      .max(20, "please enter password no more than 20 digit"),
+  });
+
   const {
     register,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     handleSubmit,
-  } = useForm();
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
   const [userInfo, setUserInfo] = useState();
-  const onSubmit = (data) => {
+
+  const onSubmit = async (data) => {
     setUserInfo(data);
     console.log(data);
-    NotificationManager.success("you have been registered successfully");
+    const loginRes = await submitData(data);
+    console.log("loginRes: ", loginRes);
+    if(loginRes.status===201 && loginRes.statusText==='Created'){
+      localStorage.setItem("token",loginRes.data.token);
+    Store.addNotification({
+      title: "Wonderful!",
+      message: "you have been logging successfully",
+      type: "success",
+      insert: "top",
+      container: "top-right",
+      dismiss: {
+        duration: 1000,
+        //onScreen: true
+      },
+    });
+    navigate('/')
+    }
+    if(loginRes.response.status === 404){
+      Store.addNotification({
+        message: loginRes.response.data.message,
+        type: "danger",
+        insert: "top",
+        container: "top-right",
+        dismiss: {
+          duration: 1000,
+          //onScreen: true
+        },
+      });
+    }
+    
+    //await signinApi(data);
+
   };
 
   // const navigate = useNavigate();
@@ -72,61 +129,49 @@ const Signin = () => {
     <div className="container">
       <pre>{JSON.stringify(userInfo, undefined, 2)}</pre>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <Form onFinish={handleSubmit(onSubmit)}>
         <div className="mb-3">
-          <h3>Sign In</h3>
+          <h3>{t("signin")}</h3>
         </div>
         <div className="mb-3">
-          <label> Email</label>
+          <label>{t("email")}</label>
           <input
             type="email"
-            id="loginName"
             className="form-control"
             name="email"
-            {...register("email", {
-              required: { value: "true", message: "Email is required" },
-              pattern: {
-                value: /^\S+@\S+$/i,
-                message: "This is not a valid email",
-              },
-            })}
+            {...register("email")}
           />
         </div>
         <p>{errors.email?.message}</p>
 
         <div className=" mb-4">
-          <label>Password</label>
+          <label>{t("password")}</label>
           <input
             type="password"
             id="loginPassword"
             className="form-control"
-            {...register("password", {
-              required: { value: true, message: "please enter password" },
-              minLength: {
-                value: 8,
-                message: "please enter password with 8 digit at least",
-              },
-              maxLength: {
-                value: 20,
-                message: "please enter password no more than 20 digit",
-              },
-            })}
+            {...register("password")}
           />
         </div>
         <p>{errors.password?.message}</p>
 
         <div className="d-grid">
-          <button type="submit" className="btn signin">
-            Sign in
-          </button>
+          <Button
+            className="signin"
+            htmlType="submit"
+            type="primary"
+            loading={isSubmitting}
+          >
+            {t("signin")}
+          </Button>
         </div>
         <p className="forgot-password text-rcenter">
-          Don't Have Account?{" "}
+          {t(`Don't Have Account`)}{" "}
           <Link className="link" to="/signup">
-            sign up
+            {t("signup")}
           </Link>
         </p>
-      </form>
+      </Form>
     </div>
   );
 };
